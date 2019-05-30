@@ -1,4 +1,7 @@
+from typing import List
+from typing import Union
 import weakref
+
 import torch
 
 import syft
@@ -590,13 +593,18 @@ class TorchTensor(AbstractTensor):
 
     fix_precision_ = fix_prec_
 
-    def share(self, *owners, field=None, crypto_provider=None):
+    def share(
+        self,
+        *owners: List[BaseWorker],
+        field: Union[int, None] = None,
+        crypto_provider: Union[BaseWorker, None] = None,
+    ):
         """This is a pass through method which calls .share on the child.
 
         Args:
-            owners (list): a list of BaseWorker objects determining who to send shares to
-            field (int or None): the arithmetic field where live the shares
-            crypto_provider (BaseWorker or None): the worker providing the crypto primitives
+            owners (list): A list of BaseWorker objects determining who to send shares to.
+            field (int or None): The arithmetic field where live the shares.
+            crypto_provider (BaseWorker or None): The worker providing the crypto primitives.
         """
 
         if self.has_child():

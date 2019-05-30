@@ -168,15 +168,17 @@ class AdditiveSharingTensor(AbstractTensor):
     def reconstruct(self):
         """
         Reconstruct the shares of the AdditiveSharingTensor remotely without
-        its owner being able to see any sensitive value
+        its owner being able to see any sensitive value.
 
         Returns:
-            A MultiPointerTensor where all workers hold the reconstructed value
+            A MultiPointerTensor where all workers hold the reconstructed value.
         """
         workers = self.locations
 
         ptr_to_sh = self.wrap().send(workers[0])
         pointer = ptr_to_sh.remote_get()
+
+        assert False
 
         pointers = [pointer]
         for worker in workers[1:]:
@@ -222,7 +224,7 @@ class AdditiveSharingTensor(AbstractTensor):
 
         Returns:
             an AdditiveSharingTensor
-            
+
         """
         selected_shares = {}
         for worker, share in self_shares.items():

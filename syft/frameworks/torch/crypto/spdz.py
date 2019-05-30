@@ -27,8 +27,12 @@ def spdz_mul(cmd: Callable, x_sh, y_sh, crypto_provider: AbstractWorker, field: 
 
     delta = x_sh - a
     epsilon = y_sh - b
+
     # Reconstruct and send to all workers
     delta = delta.reconstruct()
+
+    assert False
+
     epsilon = epsilon.reconstruct()
 
     delta_epsilon = cmd(delta, epsilon)
