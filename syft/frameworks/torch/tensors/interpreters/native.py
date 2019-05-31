@@ -5,7 +5,7 @@ import weakref
 import torch
 
 import syft
-import syft as sy
+from syft.exceptions import InvalidTensorForRemoteGet
 from syft.frameworks.torch.tensors.interpreters import AbstractTensor
 from syft.frameworks.torch.pointers import PointerTensor
 from syft.workers import BaseWorker
@@ -141,7 +141,7 @@ class TorchTensor(AbstractTensor):
             try:
                 return self._id
             except:
-                self._id = sy.ID_PROVIDER.pop()
+                self._id = syft.ID_PROVIDER.pop()
                 return self._id
 
     @id.setter
@@ -427,7 +427,7 @@ class TorchTensor(AbstractTensor):
             if location.id != self.owner.id:
                 ptr_id = self.id
             else:
-                ptr_id = sy.ID_PROVIDER.pop()
+                ptr_id = syft.ID_PROVIDER.pop()
 
         if shape is None:
             shape = self.shape
@@ -448,7 +448,7 @@ class TorchTensor(AbstractTensor):
             )
 
         if self.requires_grad and local_autograd:
-            ptr = sy.AutogradTensor(data=ptr.wrap(), preinitialize_grad=preinitialize_grad).on(
+            ptr = syft.AutogradTensor(data=ptr.wrap(), preinitialize_grad=preinitialize_grad).on(
                 ptr, wrap=False
             )
 
@@ -456,9 +456,12 @@ class TorchTensor(AbstractTensor):
 
     def mid_get(self):
         """This method calls .get() on a child pointer and correctly registers the results"""
+        if not hasattr(self, "child"):
+            raise InvalidTensorForRemoteGet(self)
 
         child_id = self.child.id
         tensor = self.child.get()
+        print(child_id, tensor)
         self.owner._objects[child_id] = tensor
 
     def remote_get(self):
@@ -467,6 +470,8 @@ class TorchTensor(AbstractTensor):
 
         TODO: make this kind of message forwarding generic?
         """
+        if not hasattr(self, "child"):
+            raise InvalidTensorForRemoteGet(self)
 
         location = self.child.location
         self.owner.send_command(message=("mid_get", self.child, (), {}), recipient=location)
@@ -641,4 +646,4 @@ class TorchTensor(AbstractTensor):
         ps = list(pointers)
         ps.append(self)
 
-        return sy.combine_pointers(*ps)
+        return syft.combine_pointers(*ps)
